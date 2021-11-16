@@ -1,9 +1,10 @@
-import React, {useState} from 'react';
-import './App.css';
+import React, {useState, useRef} from 'react';
+import './App.scss';
 import {parse} from 'svg-parser'
 // @ts-ignore
 // import { Stage } from '@flsh/svg2canvas/lib/svg2canvas.umd.min'
 
+import Canvas from "./components/canvas";
 
 function App() {
 
@@ -103,14 +104,19 @@ function App() {
 
   return (
     <div className="App">
-      <div className="App-left">
-        <div className="App-left-top">
-          <input type="file" onChange={selectFile}/>
-          <button onClick={downloadFile}>点击下载配置文件</button>
-        </div>
-        <div className="App-left-bottom"></div>
+      <div className="App-view">
+        <input type="file" onChange={selectFile}/>
+        <button onClick={downloadFile}>点击下载配置文件</button>
       </div>
-      <div className="App-right"></div>
+      <div className="App-view">
+        <Canvas />
+      </div>
+      <div className="App-view">
+        <Canvas />
+      </div>
+      <div className="App-view">
+        <Canvas />
+      </div>
     </div>
   );
 }

@@ -139,4 +139,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+
 .idea
+
+src/flsh-svg2canvas
