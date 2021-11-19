@@ -31,9 +31,8 @@ function App() {
   }
 
   const parseFile = (file: string) => {
-    const parseSvg = flat(parseSvgPath(parse(file))).filter(fil => fil)
-    // @ts-ignore
-    setCanvasConfig((currentState) => ([...currentState,...parseSvg]))
+    const parseSvg = flat(parseSvgPath(parse(file))).filter((fil: any) => fil)
+    setCanvasConfig((currentState) => ([...currentState,{type: 'group', nature: 'area', children: [...parseSvg]}]))
   }
 
   const download = (filename:string, text:string) => {
@@ -57,7 +56,7 @@ function App() {
   return (
     <div className="App">
       <div className="App-view">
-        <input type="file" accept="image/svg+xml" onChange={selectFile} title="设置" />
+        <input type="file" accept="image/svg+xml" onChange={selectFile} />
         <button onClick={downloadFile}>点击下载配置文件</button>
       </div>
       <div className="App-view canvas-bg">
