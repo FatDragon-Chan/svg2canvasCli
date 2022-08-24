@@ -1,6 +1,6 @@
 import {useRef, useEffect} from 'react'
 // @ts-ignore
-import { Stage, Circle, Polygon, Path, EventNames } from '../svg2canvas/svg2canvas.esm'
+import { Stage, Circle, Polygon, Path, EventNames } from '../svg2canvas/svg2canvas.umd'
 
 type RenderType = 'path' | 'circle' | 'polygon'
 
