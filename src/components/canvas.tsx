@@ -1,130 +1,91 @@
-import {useRef, useEffect} from 'react'
+import {FC, useRef, useEffect, useState} from 'react'
 // @ts-ignore
-import { Stage, Circle, Polygon, Path, EventNames } from '../svg2canvas/svg2canvas.umd'
+import {Stage} from '@ahone/svg2canvas'
 
-type RenderType = 'path' | 'circle' | 'polygon'
+import './canvas.scss'
 
-type RenderPathProps = {
-  d: string,
-  translate: number[],
-  fill:string
-}
-type RenderCircleProps = {
-  translate: number[],
-  fill: string,
-  cx: number,
-  cy: number,
-  radius: number,
-}
-type RenderPolygonProps = {
-  translate: number[],
-  fill: string,
-  points: string,
+
+interface IProps {
+  config: any[]
+  onHit?: (e: any) => void
 }
 
-export default function Canvas (props: { config: any[]; }) {
+const Canvas:FC<IProps> = (props) => {
   let stage = useRef<Stage | null>(null)
-  const {config} = props
+  const {config, onHit} = props
   const canvasRef = useRef(null)
+  const canvasWrapRef = useRef(null)
+
+  const [wrapView, setWrapView] = useState({
+    width: 0,
+    height: 0
+  })
+
 
   const canvasClick = (evt: any) => {
     // @ts-ignore
     const x = evt.clientX - canvasRef.current.getBoundingClientRect().left
     // @ts-ignore
     const y = evt.clientY - canvasRef.current.getBoundingClientRect().top
-    console.log(x,y)
     stage.current?.clickHandle(evt,{x,y})
+  }
+
+  const initWrap = () => {
+    const canvasWrap: HTMLElement = canvasWrapRef.current!
+    const {clientWidth, clientHeight} = canvasWrap
+    setWrapView({
+      width: clientWidth,
+      height: clientHeight
+    })
   }
 
   const initCanvas = () => {
     const canvas: HTMLCanvasElement  = canvasRef.current!
     const {offsetWidth, offsetHeight} = canvas
-
-    /**
-     * 生成一个离屏canvas
-     */
+    // 生成一个离屏canvas
     const offscreen = new OffscreenCanvas(offsetWidth, offsetHeight);
     const dpr = window.devicePixelRatio
     stage.current = new Stage(canvas,offscreen,offsetWidth,offsetHeight,dpr);
   }
 
-  const classifyRenderShape = (renderList: any[], cb?: () => void) => {
-    renderList.forEach(render => {
-      const shape = guideRenderFunc(render.type)({...render})
-      shape && shape.on('click', cb)
-      shape && stage.current?.add(shape)
-    })
-  }
-
-  /**
-   * 通过type判定返回不同的渲染函数，便于处理
-   * @param type
-   */
-  const guideRenderFunc: (type: RenderType) => any = (type)  =>  {
-    switch (type) {
-      case 'path':
-        return renderPath
-      case 'circle':
-        return renderCircle
-      case 'polygon':
-        return renderPolygon
-    }
-  }
-
-  const renderPath = (renderProp: RenderPathProps) => {
-    const {
-      d, translate,fill = '#F4F5F6'
-    } = renderProp;
-    return new Path({ fillColor: fill, d, translate });
-  };
-
-  const renderCircle = (renderProps: RenderCircleProps) => {
-    const {
-      fill, translate, cx, cy, radius,
-    } = renderProps;
-    return new Circle({
-      fillColor: fill, x: cx, y: cy, radius, translate,
-    });
-  };
-
-  const renderPolygon = (renderProps: RenderPolygonProps) => {
-    const {
-      fill, translate, points,
-    } = renderProps;
-    return new Polygon({
-      fillColor: fill, points, translate,
-    });
-  };
 
   /**
    * 与初始化canvas分割开
    */
   const updateCanvas = () => {
     stage.current?.clear();
-    config.forEach((step: { nature: string; children: any[] }) => {
-      console.log(step)
-      if (step.nature === 'area') {
-        classifyRenderShape(step.children, clickArea )
-      }else {
-        classifyRenderShape(step.children)
+    stage.current?.init(config.map(el => {
+      if (onHit) {
+        el.cb = ((el: any) => {
+          console.log('el: ', el)
+        })
       }
-    })
+      return el
+    }))
     stage.current?.render()
   }
 
-  const clickArea = () => {
+  const clickArea = (e: any) => {
     console.log('点击了:')
-    alert(`点击了`)
+    onHit && onHit(e)
   }
 
   useEffect(() => {
-   initCanvas();
+    initWrap();
   }, []);
+
+  useEffect(() => {
+    initCanvas();
+  }, [wrapView]);
 
   useEffect(updateCanvas, [config]);
 
 
   return (
-      <canvas onClick={canvasClick} className="canvas" ref={canvasRef} />
+      <div className={'canvas-wrap'} ref={canvasWrapRef}>
+        <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={canvasRef} />
+      </div>
   )
 }
+
+export default Canvas

@@ -10,8 +10,15 @@
 
   &-view {
     height: 50vh;
-    width: 50vw;
+    width: 50%;
     box-sizing: border-box;
 
+    &__header {
+      height: 50px;
+    }
+
+    &__content {
+      height: calc(100% - 50px)
+    }
   }
 }

@@ -1,9 +1,9 @@
-import React, {FC, useState} from 'react'
+import React, {FC, useState, useEffect} from 'react'
 import Canvas from "../../components/canvas";
 import {flat, parseSvgPath} from "../../utils/createSvgConfig";
 import {parse} from "svg-parser";
 
-import './index.less'
+import './index.scss'
 
 const Index:FC = () => {
 
@@ -22,9 +22,9 @@ const Index:FC = () => {
     const reader = new FileReader()
     reader.readAsText(fileData)
     reader.onload = (e) => {
-      const fileString = e?.target?.result || ''
-      setFile(fileString as string)
-      parseFile(fileString as string)
+      const fileString = e?.target?.result as string || ''
+      setFile(fileString)
+      parseFile(fileString)
     }
   }
 
@@ -51,6 +51,10 @@ const Index:FC = () => {
     download('config.json', JSON.stringify(canvasConfig))
   }
 
+  const clickCanvas = (e: any) => {
+    console.log('e: ', e)
+  }
+
   return (
     <div className="index">
       <div className="index-view">
@@ -58,7 +62,10 @@ const Index:FC = () => {
         <button onClick={downloadFile}>点击下载配置文件</button>
       </div>
       <div className="index-view">
-        <Canvas config={canvasConfig}/>
+        <div className="index-view__header">点击区域</div>
+        <div className="index-view__content">
+          <Canvas config={canvasConfig} onHit={clickCanvas}/>
+        </div>
       </div>
       <div className="index-view">
         <div>区域背景</div>
