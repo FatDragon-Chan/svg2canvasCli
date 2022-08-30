@@ -1,36 +1,35 @@
-import React, {FC, useState, useEffect} from 'react'
+import React, {FC, useState, useMemo, useEffect} from 'react'
+import {parse} from "svg-parser";
+import { nanoid } from 'nanoid'
+import { Button, Row, Col, Card, Upload, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
+
+
 import Canvas from "../../components/canvas";
 import {flat, parseSvgPath} from "../../utils/createSvgConfig";
-import {parse} from "svg-parser";
+
 
 import './index.scss'
 
 const Index:FC = () => {
 
-  const [file, setFile] = useState<string>('')
+  const [interactionFileList, setInteractionFileList] = useState<UploadFile[]>([])
+  const [canvasBgConfig,setCanvasBgConfig] = useState<Array<any>>([])
+  const [canvasInteractionConfig, setCanvasInteractionConfig] = useState<Array<any>>([])
+  const [selectedList, setSelectedList] = useState<any[]>([])
 
-  const [canvasConfig, setCanvasConfig] = useState<Array<any>>([])
+  const canvasConfig = useMemo(() => {
+    return [
+      ...canvasBgConfig,
+      ...canvasInteractionConfig
+    ]
+  }, [canvasBgConfig, canvasInteractionConfig, selectedList]);
 
-  const selectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let fileList: FileList | null =  event.target.files;
-    if(!fileList) return
-    readerFile(fileList[0])
-  }
-
-  const readerFile = (fileData: File) => {
-    if (!fileData) return
-    const reader = new FileReader()
-    reader.readAsText(fileData)
-    reader.onload = (e) => {
-      const fileString = e?.target?.result as string || ''
-      setFile(fileString)
-      parseFile(fileString)
-    }
-  }
 
   const parseFile = (file: string) => {
     const parseSvg = flat(parseSvgPath(parse(file))).filter((fil: any) => fil)
-    setCanvasConfig((currentState) => ([...currentState,{type: 'group', nature: 'area', children: [...parseSvg]}]))
+    return {type: 'group', children: [...parseSvg]}
   }
 
   const download = (filename:string, text:string) => {
@@ -44,37 +43,135 @@ const Index:FC = () => {
   }
 
   const downloadFile = () => {
-    if (!file) {
-      alert('请选择需要解析的svg文件')
+    if (!canvasConfig.length) {
+      alert('请先上传svg')
       return
     }
     download('config.json', JSON.stringify(canvasConfig))
   }
 
-  const clickCanvas = (e: any) => {
-    console.log('e: ', e)
+  const clickCanvas = (nanoids: Set<string>[]) => {
+    console.log('nanoids: ', nanoids)
+    // const selectIndex = selectedList.indexOf(nanoid)
+    // if (selectIndex !== -1) {
+    //   setSelectedList((list => [...list, nanoid]))
+    // }else {
+    //   const newSelectedList = selectedList.slice();
+    //   newSelectedList.splice(selectIndex, 1);
+    //   setSelectedList(newSelectedList)
+    // }
   }
 
+  const uploadBgProps: UploadProps = {
+    beforeUpload: file => {
+      const isSvg = file.type === 'image/svg+xml';
+      if (!isSvg) {
+        message.error(`${file.name} is not a svg file`);
+        return
+      }
+      const reader = new FileReader()
+      // @ts-ignore
+      reader.readAsText(file)
+      reader.onload = (e) => {
+        const fileString = e?.target?.result as string || ''
+        const parseBgCanvasConfig = {
+          ...parseFile(fileString),
+          nature: 'background'
+        }
+        setCanvasBgConfig([parseBgCanvasConfig])
+      }
+      return false
+    },
+  };
+
+
+  const uploadActionProps: UploadProps = {
+    beforeUpload: file => {
+      const isSvg = file.type === 'image/svg+xml';
+      if (!isSvg) {
+        message.error(`${file.name} is not a svg file`);
+        return
+      }
+      setInteractionFileList((fileList) =>[...fileList, file])
+      return false
+    },
+    onRemove: file => {
+      const index = interactionFileList.indexOf(file);
+      const newFileList = interactionFileList.slice();
+      newFileList.splice(index, 1);
+      setInteractionFileList(newFileList);
+    },
+  };
+
+  const clickNano = (nanoid: any) => {
+    console.log('nanoid: ', nanoid)
+  }
+
+  useEffect(() => {
+    setCanvasInteractionConfig([])
+    interactionFileList.forEach(async (file) => {
+      const reader = new FileReader()
+      // @ts-ignore
+      await reader.readAsText(file)
+      reader.onload = (e) => {
+        const fileString = e?.target?.result as string || ''
+        const nanoId = nanoid()
+        const parseBgCanvasConfig = {
+          ...parseFile(fileString),
+          nature: 'interaction',
+          nanoid: nanoId,
+          cb: clickCanvas
+        }
+        setCanvasInteractionConfig((configs => [...configs, parseBgCanvasConfig]))
+      }
+    })
+  }, [interactionFileList])
+
   return (
-    <div className="index">
-      <div className="index-view">
-        <input type="file" accept="image/svg+xml" onChange={selectFile} />
-        <button onClick={downloadFile}>点击下载配置文件</button>
-      </div>
-      <div className="index-view">
-        <div className="index-view__header">点击区域</div>
-        <div className="index-view__content">
-          <Canvas config={canvasConfig} onHit={clickCanvas}/>
-        </div>
-      </div>
-      <div className="index-view">
-        <div>区域背景</div>
-        <Canvas config={canvasConfig}/>
-      </div>
-      <div className="index-view">
-        <div>最终演示</div>
-        <Canvas config={canvasConfig}/>
-      </div>
+    <div className='index'>
+      <Row gutter={16}>
+        <Col span={12}>
+          <Card bordered={false} className='index-card'>
+            {/*<div>*/}
+            {/*  <button onClick={downloadFile}>点击下载配置文件</button>*/}
+            {/*</div>*/}
+            <div style={{marginBottom: '20px'}}>
+              <Upload {...uploadBgProps} showUploadList={false}>
+                <Button icon={<UploadOutlined />}>设置背景图</Button>
+              </Upload>
+            </div>
+            <div>
+              <Upload {...uploadActionProps}>
+                <Button icon={<UploadOutlined />}>设置互动背景</Button>
+              </Upload>
+            </div>
+          </Card>
+        </Col>
+        {/*<Col span={12}>*/}
+        {/*  <Card bordered={false} className='index-card'>*/}
+        {/*    <div className='index-card__title'>背景区域</div>*/}
+        {/*    <div className='index-card__content'>*/}
+        {/*      <Canvas config={canvasBgConfig} />*/}
+        {/*    </div>*/}
+        {/*  </Card>*/}
+        {/*</Col>*/}
+        {/*<Col span={12}>*/}
+        {/*  <Card bordered={false} className='index-card'>*/}
+        {/*    <div className='index-card__title'>互动背景</div>*/}
+        {/*    <div className='index-card__content'>*/}
+        {/*      <Canvas config={canvasInteractionConfig}/>*/}
+        {/*    </div>*/}
+        {/*  </Card>*/}
+        {/*</Col>*/}
+        <Col span={12}>
+          <Card bordered={false} className='index-card'>
+            <div className='index-card__title'>最终演示</div>
+            <div className='index-card__content'>
+              <Canvas config={canvasConfig}/>
+            </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   )
 }

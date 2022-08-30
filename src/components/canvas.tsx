@@ -1,19 +1,19 @@
 import {FC, useRef, useEffect, useState} from 'react'
 // @ts-ignore
-import {Stage} from '@ahone/svg2canvas'
+import {Stage} from '../svg2canvas/svg2canvas.esm'
 
 import './canvas.scss'
 
 
 interface IProps {
   config: any[]
-  onHit?: (e: any) => void
 }
 
 const Canvas:FC<IProps> = (props) => {
   let stage = useRef<Stage | null>(null)
-  const {config, onHit} = props
+  const {config} = props
   const canvasRef = useRef(null)
+  const offCanvasRef = useRef(null)
   const canvasWrapRef = useRef(null)
 
   const [wrapView, setWrapView] = useState({
@@ -43,7 +43,9 @@ const Canvas:FC<IProps> = (props) => {
     const canvas: HTMLCanvasElement  = canvasRef.current!
     const {offsetWidth, offsetHeight} = canvas
     // 生成一个离屏canvas
-    const offscreen = new OffscreenCanvas(offsetWidth, offsetHeight);
+
+    const offscreen: HTMLCanvasElement  = offCanvasRef.current!
+    // const offscreen = new OffscreenCanvas(offsetWidth, offsetHeight);
     const dpr = window.devicePixelRatio
     stage.current = new Stage(canvas,offscreen,offsetWidth,offsetHeight,dpr);
   }
@@ -54,20 +56,8 @@ const Canvas:FC<IProps> = (props) => {
    */
   const updateCanvas = () => {
     stage.current?.clear();
-    stage.current?.init(config.map(el => {
-      if (onHit) {
-        el.cb = ((el: any) => {
-          console.log('el: ', el)
-        })
-      }
-      return el
-    }))
+    stage.current?.init(config)
     stage.current?.render()
-  }
-
-  const clickArea = (e: any) => {
-    console.log('点击了:')
-    onHit && onHit(e)
   }
 
   useEffect(() => {
@@ -84,6 +74,7 @@ const Canvas:FC<IProps> = (props) => {
   return (
       <div className={'canvas-wrap'} ref={canvasWrapRef}>
         <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={canvasRef} />
+         <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={offCanvasRef} />
       </div>
   )
 }
