@@ -47,7 +47,18 @@ const Canvas:FC<IProps> = (props) => {
     const offscreen: HTMLCanvasElement  = offCanvasRef.current!
     // const offscreen = new OffscreenCanvas(offsetWidth, offsetHeight);
     const dpr = window.devicePixelRatio
-    stage.current = new Stage(canvas,offscreen,offsetWidth,offsetHeight,dpr);
+    const config= {
+      canvasRes: canvas,
+      osCanvasRes: offscreen,
+      width: offsetWidth,
+      height: offsetHeight,
+      dpr
+    }
+    stage.current = new Stage(config, change);
+  }
+
+  const change = (ids: string[]) => {
+    console.log('ids: ', ids)
   }
 
 

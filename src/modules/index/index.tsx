@@ -50,8 +50,8 @@ const Index:FC = () => {
     download('config.json', JSON.stringify(canvasConfig))
   }
 
-  const clickCanvas = (nanoids: Set<string>[]) => {
-    console.log('nanoids: ', nanoids)
+  const onNanoIdsChange = (nanoids: Set<string>[]) => {
+    console.log('nanoids: ', nanoids.values())
     // const selectIndex = selectedList.indexOf(nanoid)
     // if (selectIndex !== -1) {
     //   setSelectedList((list => [...list, nanoid]))
@@ -103,24 +103,21 @@ const Index:FC = () => {
     },
   };
 
-  const clickNano = (nanoid: any) => {
-    console.log('nanoid: ', nanoid)
-  }
-
   useEffect(() => {
     setCanvasInteractionConfig([])
-    interactionFileList.forEach(async (file) => {
+    interactionFileList.forEach(async (file, index) => {
       const reader = new FileReader()
       // @ts-ignore
       await reader.readAsText(file)
       reader.onload = (e) => {
         const fileString = e?.target?.result as string || ''
-        const nanoId = nanoid()
+        // const nanoId = nanoid()
+        const nanoId = `${index}`
         const parseBgCanvasConfig = {
           ...parseFile(fileString),
           nature: 'interaction',
           nanoid: nanoId,
-          cb: clickCanvas
+          cb: onNanoIdsChange
         }
         setCanvasInteractionConfig((configs => [...configs, parseBgCanvasConfig]))
       }
@@ -141,7 +138,7 @@ const Index:FC = () => {
               </Upload>
             </div>
             <div>
-              <Upload {...uploadActionProps}>
+              <Upload {...uploadActionProps} multiple>
                 <Button icon={<UploadOutlined />}>设置互动背景</Button>
               </Upload>
             </div>
@@ -175,6 +172,5 @@ const Index:FC = () => {
     </div>
   )
 }
-
 
 export default Index
