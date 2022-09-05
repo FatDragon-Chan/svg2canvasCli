@@ -129,9 +129,9 @@ const Index:FC = () => {
       <Row gutter={16}>
         <Col span={12}>
           <Card bordered={false} className='index-card'>
-            {/*<div>*/}
-            {/*  <button onClick={downloadFile}>点击下载配置文件</button>*/}
-            {/*</div>*/}
+            <div style={{marginBottom: '20px'}}>
+              <Button onClick={downloadFile}>点击下载配置文件</Button>
+            </div>
             <div style={{marginBottom: '20px'}}>
               <Upload {...uploadBgProps} showUploadList={false}>
                 <Button icon={<UploadOutlined />}>设置背景图</Button>

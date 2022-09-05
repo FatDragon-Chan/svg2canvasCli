@@ -1,6 +1,6 @@
 import {FC, useRef, useEffect, useState} from 'react'
 // @ts-ignore
-import {Stage} from '@ahone/svg2canvas'
+import {Stage} from './svg2canvas/svg2canvas.umd'
 import { Button } from 'antd';
 
 import './canvas.scss'
@@ -85,7 +85,6 @@ const Canvas:FC<IProps> = (props) => {
   }
 
   useEffect(updateCanvas, [config]);
-
 
   return (
     <div className={'canvas-wrap'} ref={canvasWrapRef}>
