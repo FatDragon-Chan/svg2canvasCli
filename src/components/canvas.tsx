@@ -1,6 +1,7 @@
 import {FC, useRef, useEffect, useState} from 'react'
 // @ts-ignore
-import {Stage} from '../svg2canvas/svg2canvas.esm'
+import {Stage} from '@ahone/svg2canvas'
+import { Button } from 'antd';
 
 import './canvas.scss'
 
@@ -57,8 +58,8 @@ const Canvas:FC<IProps> = (props) => {
     stage.current = new Stage(config, change);
   }
 
-  const change = (ids: string[]) => {
-    console.log('ids: ', ids)
+  const change = (changeKey: string) => {
+    console.log('newIds: ', changeKey)
   }
 
 
@@ -79,14 +80,19 @@ const Canvas:FC<IProps> = (props) => {
     initCanvas();
   }, [wrapView]);
 
+  const setDefault = () => {
+    stage.current?.setActions([1, 2])
+  }
+
   useEffect(updateCanvas, [config]);
 
 
   return (
-      <div className={'canvas-wrap'} ref={canvasWrapRef}>
-        <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={canvasRef} />
-         <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={offCanvasRef} />
-      </div>
+    <div className={'canvas-wrap'} ref={canvasWrapRef}>
+      <Button onClick={setDefault}>设置默认值</Button>
+      <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={canvasRef} />
+      <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={offCanvasRef} />
+    </div>
   )
 }
 
