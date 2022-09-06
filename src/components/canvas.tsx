@@ -1,4 +1,4 @@
-import {FC, useRef, useEffect, useState} from 'react'
+import {FC, useRef, useEffect, useState, useMemo} from 'react'
 // @ts-ignore
 import {Stage} from './svg2canvas/svg2canvas.umd'
 import { Button } from 'antd';
@@ -17,10 +17,8 @@ const Canvas:FC<IProps> = (props) => {
   const offCanvasRef = useRef(null)
   const canvasWrapRef = useRef(null)
 
-  const [wrapView, setWrapView] = useState({
-    width: 0,
-    height: 0
-  })
+  const [wrapView, setWrapView] = useState({width: 0, height: 0})
+  const [changeKey, setChangeKey] = useState('')
 
 
   const canvasClick = (evt: any) => {
@@ -55,11 +53,12 @@ const Canvas:FC<IProps> = (props) => {
       height: offsetHeight,
       dpr
     }
-    stage.current = new Stage(config, change);
+    stage.current = new Stage(config, change.bind(this));
   }
 
+
   const change = (changeKey: string) => {
-    console.log('newIds: ', changeKey)
+    setChangeKey(changeKey)
   }
 
 
@@ -67,6 +66,7 @@ const Canvas:FC<IProps> = (props) => {
    * 与初始化canvas分割开
    */
   const updateCanvas = () => {
+    setChangeKey('')
     stage.current?.clear();
     stage.current?.init(config)
     stage.current?.render()
@@ -89,6 +89,9 @@ const Canvas:FC<IProps> = (props) => {
   return (
     <div className={'canvas-wrap'} ref={canvasWrapRef}>
       <Button onClick={setDefault}>设置默认值</Button>
+      <div>
+        <div>当前选中的区域ID为 `{changeKey}`</div>
+      </div>
       <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={canvasRef} />
       <canvas style={{width: `${wrapView.width}px`, height: `${wrapView.height}px`}} width={wrapView.width} height={wrapView.height} onClick={canvasClick} className="canvas" ref={offCanvasRef} />
     </div>

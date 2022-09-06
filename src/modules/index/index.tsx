@@ -1,8 +1,8 @@
 import React, {FC, useState, useMemo, useEffect} from 'react'
 import {parse} from "svg-parser";
 import { nanoid } from 'nanoid'
-import { Button, Row, Col, Card, Upload, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Button, Row, Col, Card, Upload, message, List, Input, Switch } from 'antd';
+import { UploadOutlined, CloseOutlined} from '@ant-design/icons';
 import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
 
 
@@ -17,14 +17,18 @@ const Index:FC = () => {
   const [interactionFileList, setInteractionFileList] = useState<UploadFile[]>([])
   const [canvasBgConfig,setCanvasBgConfig] = useState<Array<any>>([])
   const [canvasInteractionConfig, setCanvasInteractionConfig] = useState<Array<any>>([])
-  const [selectedList, setSelectedList] = useState<any[]>([])
+  const [nanoIdSwitch, setNanoIdSwitch] = useState(false)
 
   const canvasConfig = useMemo(() => {
     return [
       ...canvasBgConfig,
-      ...canvasInteractionConfig
+      ...canvasInteractionConfig.map((el, index) => {
+        const nanoId = nanoIdSwitch? nanoid(): `${++index}`
+        el.nanoid = nanoId
+        return el
+      })
     ]
-  }, [canvasBgConfig, canvasInteractionConfig, selectedList]);
+  }, [canvasBgConfig, canvasInteractionConfig, nanoIdSwitch]);
 
 
   const parseFile = (file: string) => {
@@ -48,18 +52,6 @@ const Index:FC = () => {
       return
     }
     download('config.json', JSON.stringify(canvasConfig))
-  }
-
-  const onNanoIdsChange = (nanoids: Set<string>[]) => {
-    console.log('nanoids: ', nanoids.values())
-    // const selectIndex = selectedList.indexOf(nanoid)
-    // if (selectIndex !== -1) {
-    //   setSelectedList((list => [...list, nanoid]))
-    // }else {
-    //   const newSelectedList = selectedList.slice();
-    //   newSelectedList.splice(selectIndex, 1);
-    //   setSelectedList(newSelectedList)
-    // }
   }
 
   const uploadBgProps: UploadProps = {
@@ -103,21 +95,39 @@ const Index:FC = () => {
     },
   };
 
+  const changeNanoId = (e: any, item: any) => {
+    const { value: inputValue } = e.target;
+    setCanvasInteractionConfig((old) => {
+      return old.map((el: any) =>{
+        if (el.fileName === item.fileName) {
+          el.nanoid = inputValue
+        }
+        return el
+      })
+    })
+  }
+
+  const deleteConfig = (item: any) => {
+    const index = canvasInteractionConfig.findIndex(el => el.fileName === item.fileName)
+    if (index < 0) return
+    const newConfig = [...canvasInteractionConfig]
+    newConfig.splice(index, 1)
+    setCanvasInteractionConfig(newConfig)
+  }
+
   useEffect(() => {
     setCanvasInteractionConfig([])
     interactionFileList.forEach(async (file, index) => {
       const reader = new FileReader()
+      const fileName = file.name
       // @ts-ignore
       await reader.readAsText(file)
       reader.onload = (e) => {
         const fileString = e?.target?.result as string || ''
-        // const nanoId = nanoid()
-        const nanoId = `${index}`
         const parseBgCanvasConfig = {
           ...parseFile(fileString),
           nature: 'interaction',
-          nanoid: nanoId,
-          cb: onNanoIdsChange
+          fileName
         }
         setCanvasInteractionConfig((configs => [...configs, parseBgCanvasConfig]))
       }
@@ -138,31 +148,40 @@ const Index:FC = () => {
               </Upload>
             </div>
             <div>
-              <Upload {...uploadActionProps} multiple>
-                <Button icon={<UploadOutlined />}>设置互动背景</Button>
+              <Upload {...uploadActionProps} showUploadList={false} multiple>
+                <Button icon={<UploadOutlined />} style={{marginRight: '20px'}}>设置互动背景</Button>
               </Upload>
+            </div>
+            <div>
+              <List
+                size="small"
+                bordered
+                header={(
+                  <div>nanoId：
+                    <Switch
+                      checkedChildren="开启"
+                      unCheckedChildren="关闭"
+                      defaultChecked={nanoIdSwitch}
+                      onChange={(e) => setNanoIdSwitch(e)}
+                    />
+                  </div>
+                )}
+                dataSource={canvasInteractionConfig}
+                renderItem={item => (
+                  <List.Item>
+                    <div className='list-item-wrap'>
+                      <Input placeholder="Borderless" bordered={false} value={item.fileName} readOnly/>
+                      <Input addonBefore="区域ID" value={item.nanoid} onChange={(e) => changeNanoId(e, item)}/>
+                      <Button shape="circle" icon={<CloseOutlined />} onClick={() => deleteConfig(item)}/>
+                    </div>
+                  </List.Item>
+                )}
+              />
             </div>
           </Card>
         </Col>
-        {/*<Col span={12}>*/}
-        {/*  <Card bordered={false} className='index-card'>*/}
-        {/*    <div className='index-card__title'>背景区域</div>*/}
-        {/*    <div className='index-card__content'>*/}
-        {/*      <Canvas config={canvasBgConfig} />*/}
-        {/*    </div>*/}
-        {/*  </Card>*/}
-        {/*</Col>*/}
-        {/*<Col span={12}>*/}
-        {/*  <Card bordered={false} className='index-card'>*/}
-        {/*    <div className='index-card__title'>互动背景</div>*/}
-        {/*    <div className='index-card__content'>*/}
-        {/*      <Canvas config={canvasInteractionConfig}/>*/}
-        {/*    </div>*/}
-        {/*  </Card>*/}
-        {/*</Col>*/}
         <Col span={12}>
           <Card bordered={false} className='index-card'>
-            <div className='index-card__title'>最终演示</div>
             <div className='index-card__content'>
               <Canvas config={canvasConfig}/>
             </div>
