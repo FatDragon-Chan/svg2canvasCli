@@ -1,6 +1,6 @@
-import {FC, useRef, useEffect, useState, useMemo} from 'react'
+import {FC, useRef, useEffect, useState} from 'react'
 // @ts-ignore
-import {Stage} from './svg2canvas/svg2canvas.umd'
+import { Stage } from '@ahone/svg2canvas/lib/svg2canvas.umd'
 import { Button } from 'antd';
 
 import './canvas.scss'

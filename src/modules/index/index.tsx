@@ -116,7 +116,8 @@ const Index:FC = () => {
   }
 
   useEffect(() => {
-    setCanvasInteractionConfig([])
+    if (interactionFileList.length <= 0) return
+
     interactionFileList.forEach(async (file, index) => {
       const reader = new FileReader()
       const fileName = file.name
@@ -132,6 +133,7 @@ const Index:FC = () => {
         setCanvasInteractionConfig((configs => [...configs, parseBgCanvasConfig]))
       }
     })
+    setInteractionFileList([])
   }, [interactionFileList])
 
   return (

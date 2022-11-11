@@ -12,9 +12,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ahone/svg2canvas@npm:0.0.2-beta3":
-  version: 0.0.2-beta3
-  resolution: "@ahone/svg2canvas@npm:0.0.2-beta3"
+"@ahone/svg2canvas@npm:0.0.5":
+  version: 0.0.5
+  resolution: "@ahone/svg2canvas@npm:0.0.5"
   dependencies:
     "@rollup/plugin-alias": ^3.1.8
     "@rollup/plugin-babel": ^5.3.0
@@ -39,7 +39,7 @@ __metadata:
     svg-parser: ^2.0.4
     webpack: ^5.59.0
     webpack-cli: ^4.9.1
-  checksum: dddb3dd987879e731294b2fd75b88b893132a3889203785ffff9c70c4df09b90fa57692b6aba9f716d6aad935f736d2cf2ebb145db8912b97754aea1b787e30a
+  checksum: a070af92dfeedfba03980e4b8450019b7b5809b47e1673ef04907ec588365d2857d0a8d00a709f88dde3e34a13a765c77cc07c69c5e765b47059e21e71bb9325
   languageName: node
   linkType: hard
 
@@ -16595,7 +16595,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "svg-config-parser@workspace:."
   dependencies:
-    "@ahone/svg2canvas": 0.0.2-beta3
+    "@ahone/svg2canvas": 0.0.5
     "@babel/core": 7.12.3
     "@pmmmwh/react-refresh-webpack-plugin": 0.4.3
     "@svgr/webpack": 5.5.0
